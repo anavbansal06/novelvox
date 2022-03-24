@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script><![CDATA[/*! RESOURCE: /scripts/openframe/latest/openFrameAPI.min.js */
+/*! openFrameAPI v1.0.2 | (c) 2014-2018 [ServiceNow], All Rights Reserved */
+var SNC;
+(SNC = window.SNC || {}).DataValidation = function() {
+    var value1 = 256,
+        value2 = 4400,
+        navigation_Page = ["sysparm_stack", "sysparm_goto_url"];
+
+    function input(value1) {
+        throw value1
+    }
+    return {
+        contains: function(value1, value2) {
+            for (var navigation_Page in value1)
+                if (value1.hasOwnProperty(navigation_Page) && value1[navigation_Page] == value2) return !0;
+            return !1
+        },
+        stringValidation: function(value2, navigation_Page, obj1) {
+            return "string" != typeof value2 && input("Input is incorrect. Only string is supported"), navigation_Page && obj1 ? value2.length > obj1 && input("Length cannot be more than " + obj1) : navigation_Page && value2.length > value1 && input("Length cannot be more than " + value1), !0
+        },
+        numberValidation: function(value1) {
+            return ("number" != typeof value1 || value1 < 0) && input("Input is incorrect. Only number is supported and it should be greater than 0"), !0
+        },
+        objectValidation: function(value1) {
+            return null != value1 && "object" == typeof value1 || input("Input is incorrect. Only object is supported"), !0
+        },
+        objectSizeValidation: function(value1) {
+            return !(value1.length > value2)
+        },
+        queryStringValidation: function(value1) {
+            for (var value2 = 0; value2 < navigation_Page.length; value2++) - 1 != value1.indexOf(navigation_Page[value2]) && input("Url query string cannot have redirects");
+            return !0
+        },
+        customURLValidation: function(value1) {
+            return 1 == /^(?:[a-z]+:)?\/\//i.test(value1) && input("Custom url cannot be absolute"), !0
+        },
+        throwError: input
+    }
+}(), (SNC = window.SNC || {}).Communication = function() {
+    var stateValue = {
+            INIT: "openframe_init",
+            SHOW: "openframe_show",
+            HIDE: "openframe_hide",
+            VISIBLE: "openframe_visible",
+            REQUEST: "openframe_request",
+            RESPONSE: "openframe_response",
+            GET_CONFIG: "openframe_get_config",
+            SET_SIZE: "openframe_set_size",
+            SET_HEADER_TITLE: "openframe_set_header_title",
+            SET_HEADER_TITLE_ICON: "openframe_set_header_title_icon",
+            SET_HEADER_ICONS: "openframe_set_header_icons",
+            SET_TOP_FRAME_URL: "openframe_set_top_frame_url",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        newwin = "NOW.PostMessage",
+        value3 = 3e3,
+        xargs = {},
+        obj1 = "*",
+        input_validation = SNC.DataValidation;
+
+    function a(value3, xargs, a) {
+        var stingyfydata, EventD, Ovalue = "";
+        input_validation.contains(stateValue, value3) && (EventD = {
+            type: newwin,
+            eventName: value3,
+            args: xargs
+        }, top.postMessage ? obj1 || a ? (stingyfydata = JSON.stringify(EventD), input_validation.objectSizeValidation(stingyfydata) || (Ovalue = "Message payload exceeds the supported limit")) : Ovalue = "The Top domain is undefined for cross domain messaging" : Ovalue = "Browser does not support cross domain messaging", Ovalue ? u(stateValue.COMMUNICATION_FAILURE, Ovalue) : top.postMessage(stingyfydata, obj1))
+
+        /*if(Ovalue){
+         EventD = u(stateValue.COMMUNICATION_FAILURE, Ovalue);
+        }
+        else{
+        	EventD = top.postMessage(stingyfydata, obj1);
+        }),*/
+    }
+
+    function stingyfydata(stateValue, newwin) {
+        var value3 = xargs[stateValue];
+        value3 || (value3 = [], xargs[stateValue] = value3), value3.push(newwin)
+    }
+
+    function u(stateValue, newwin) {
+        var value3, obj1 = xargs[stateValue];
+        if (obj1 && 0 != obj1.length)
+            for (value3 = 0; value3 < obj1.length; ++value3) {
+                obj1[value3].call(null, newwin)
+            }
+    }
+    return SNC.registeredPostMessageHandler || window.postMessage && (window.addEventListener("message", function(stateValue) {
+        var value3;
+        try {
+            value3 = JSON.parse(stateValue.data)
+        } catch (stateValue) {
+            return
+        }!value3.type != newwin && u(value3.eventName, value3.args)
+    }, !1), SNC.registeredPostMessageHandler = !0), {
+        EVENTS: stateValue,
+        init: function(newwin, xargs) {
+            jslog("INIT is working");
+            ! function(newwin, xargs, input_validation) {
+                var INITvalue = !1;
+                try {
+                    newwin.request(stateValue.INIT, {}, function(stateValue) {
+                        INITvalue || (INITvalue = !0, obj1 = stateValue.topDomain, xargs(stateValue.result))
+                    }, input_validation, !0)
+                    jslog("INIT working succesfully in NV_Softphone");
+                } catch (stateValue) {
+                    INITvalue = !0, input_validation(stateValue)
+                    jslog("INIT IS not working");
+                }
+                setTimeout(function() {
+                    INITvalue || (INITvalue = !0, input_validation("Openframe init request timed out"))
+                }, value3)
+            }(this, newwin, xargs)
+        },
+        contains: function(stateValue, newwin) {
+            for (var value3 in stateValue)
+                if (stateValue.hasOwnProperty(value3) && stateValue[value3] == newwin) return !0;
+            return !1
+        },
+        publish: a,
+        subscribe: stingyfydata,
+        request: function(newwin, value3, obj1, u, EventD) {
+            if (input_validation.contains(stateValue, newwin)) {
+                var datetime = newwin + "_" + (new Date).getTime() * Math.random(),
+                    obj2 = {},
+                    _ = this;
+                obj2.id = datetime, obj2.method = newwin, obj2.payload = value3, a(stateValue.REQUEST, obj2, EventD), stingyfydata(stateValue.RESPONSE, function(stateValue) {
+                    var newwin, value3, input_validation;
+                    datetime == stateValue.context.id && (newwin = _.EVENTS.RESPONSE, value3 = arguments.callee, (input_validation = xargs[newwin]) && 0 != input_validation.length && -1 != input_validation.indexOf(value3) && input_validation.splice(input_validation.indexOf(value3), 1), stateValue.isSuccess ? obj1(stateValue.context.result) : u(stateValue.context.result))
+
+                    /*if(stateValue.isSuccess){
+                     newwin = obj1(stateValue.context.result);
+                    }
+                    else{
+                    	newwin = u(stateValue.context.result);
+                    }
+                    )*/
+                })
+            }
+        }
+    }
+}(), SNC.OpenFrame = function() {
+    var value4 = "1.0.2",
+        //var e = "1.0.7",
+        ncomunication = SNC.Communication,
+        tvalidation = SNC.DataValidation;
+    return {
+        EVENTS: {
+            HEADER_ICON_CLICKED: "openframe_header_icon_clicked",
+            OPENFRAME_SHOWN: "openframe_shown",
+            OPENFRAME_HIDDEN: "openframe_hidden",
+            OPENFRAME_BEFORE_DESTROY: "openframe_before_destroy",
+            COMMUNICATION_EVENT: "openframe_communication",
+            //openframe_awa_agent_presence: "openframe_awa_agent_presence",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        init: function(value4, tvalidation, i) {
+            jslog("INIT is working in secound init")
+            ncomunication.init(function() {
+                ncomunication.request(ncomunication.EVENTS.GET_CONFIG, value4, tvalidation, i)
+            }, i)
+        },
+        version: function() {
+            return value4
+        },
+        show: function() {
+            ncomunication.publish(ncomunication.EVENTS.SHOW)
+        },
+        hide: function() {
+            ncomunication.publish(ncomunication.EVENTS.HIDE)
+        },
+        isVisible: function(value4, tvalidation) {
+            ncomunication.request(ncomunication.EVENTS.VISIBLE, {}, value4, tvalidation)
+        },
+        subscribe: function(value4, i) {
+            jslog("SUBSCRIBE IS WORKING NV_SOFTPHONE");
+            ncomunication.contains(this.EVENTS, value4) ? ncomunication.subscribe(value4, i) : tvalidation.throwError(value4 + " is not a valid event for subscription")
+        },
+        setTitle: function(value4) {
+            tvalidation.stringValidation(value4, !0) && ncomunication.publish(ncomunication.EVENTS.SET_HEADER_TITLE, {
+                title: value4
+            })
+        },
+        setSubtitle: function(value4) {
+            tvalidation.stringValidation(value4, !0) && ncomunication.publish(ncomunication.EVENTS.SET_HEADER_TITLE, {
+                subtitle: value4
+            })
+        },
+        setSize: function(value4, i) {
+            tvalidation.numberValidation(value4) && tvalidation.numberValidation(i) && ncomunication.publish(ncomunication.EVENTS.SET_SIZE, {
+                width: value4,
+                height: i
+            })
+        },
+        setIcons: function(value4) {
+            tvalidation.objectValidation(value4) && ncomunication.publish(ncomunication.EVENTS.SET_HEADER_ICONS, value4)
+        },
+        setTitleIcon: function(value4) {
+            tvalidation.objectValidation(value4) && ncomunication.publish(ncomunication.EVENTS.SET_HEADER_TITLE_ICON, value4)
+        },
+        openServiceNowForm: function(value4) {
+            tvalidation.objectValidation(value4) && value4.query && tvalidation.queryStringValidation(value4.query) && ncomunication.publish(ncomunication.EVENTS.SET_TOP_FRAME_URL, {
+                form: value4
+            })
+        },
+        openServiceNowList: function(value4) {
+            tvalidation.objectValidation(value4) && value4.query && tvalidation.queryStringValidation(value4.query) && ncomunication.publish(ncomunication.EVENTS.SET_TOP_FRAME_URL, {
+                list: value4
+            })
+        },
+        openCustomURL: function(value4) {
+            var i = {
+                url: value4
+            };
+            tvalidation.stringValidation(i.url, !0, 2083) && tvalidation.customURLValidation(i.url) && ncomunication.publish(ncomunication.EVENTS.SET_TOP_FRAME_URL, {
+                url: i
+            })
+        }
+    }
+}();
+var openFrameAPI = SNC.OpenFrame;
+
+
+var config = {
+    title: "NOVELVOX CTI",
+};
+
+function handleCommunicationEvent(context, isLoading) {
+    jslog("Novelvox >>>> Communication from Topframe", context);
+
+    if (isLoading)
+        return;
+
+    if (context.type == "OUTGOING_CALL") {
+        sendMsg("ServiceNowMakeCall", context.data.metaData.phoneNumber);
+        openFrameAPI.isVisible(function callback(isVisible) {
+            console.log(isVisible);
+            if (!isVisible) {
+                openFrameAPI.show();
+            }
+        });
+        if (agentCurrentState == "NOT_READY") {
+            openFrameAPI.setSubtitle('OUT: ' + context.data.metaData.phoneNumber);
+        }
+
+    } else if (context.type == "Interaction_ID") {
+        jslog("getInteractionId", context);
+        //getInteractionIdRecording
+        sendMsg("getInteractionId", {
+            "interaction_id": context.data,
+
+        });
+
+        sendMessage("getInteractionIdRecording", {
+            "interaction_id": context.data,
+
+        });
+    }
+}
+
+function initSuccess(snConfig) {
+    jslog("Novelvox >>>> openframe configuration", snConfig);
+    openFrameAPI.subscribe(openFrameAPI.EVENTS.COMMUNICATION_EVENT,
+        handleCommunicationEvent);
+
+}
+
+function initFailure(error) {
+    jslog("Novelvox >>>> OpenFrame init failed..", error);
+}
+openFrameAPI.init(config, initSuccess, initFailure);
+
+
+//**************************************************************************************************************//
+var receiveMessage = function(event) {
+    try {
+        handleMessages(event);
+        console.log("enter handleMessages message", event);
+    } catch (err) {
+        if (err) {
+            jslog('error occured');
+            //console.error('receiveMessage', err.message);
+        }
+    }
+}
+
+var addEvent = window.attachEvent || window.addEventListener;
+var event = window.attachEvent ? 'onmessage' : 'message';
+addEvent(event, receiveMessage);
+var agentCurrentState = "";
+var handleMessages = function(event) {
+    console.log("handleMessages", event);
+    if (event.data.eventName == "CallStartNotification") {
+        console.log("Novelvox CallStartNotification Event Recived", event);
+
+        openFrameAPI.setTitle('INBOUND CALL');
+        //openFrameAPI.setSubtitle('ACD IN: ' + event.data.value.data.fromAddress);
+
+        openFrameAPI.isVisible(function callback(isVisible) {
+            jslog('IS visible' + isVisible);
+            if (!isVisible) {
+                openFrameAPI.show();
+            }
+        });
+
+
+        //var variables = event.data.value.data.callVariables;
+        //var var5 = variables[4];
+        var ani = event.data.data.fromAddress;
+        console.log("ANI is", ani);
+        startCallTime = new Date();
+        jslog(" start time ==> ", startCallTime);
+
+
+        if (ani == 1111) {
+            var query = 'sys_id=' + '46e2fee9a9fe19810049b49dee0daf58';
+            //var query = 'sys_id=' + current.getUniqueValue();
+            //current.getValue('caller_id');
+            console.log("Query >>>>" + query)
+
+            startCallTime = new Date();
+            console.log(" start time ==> ", startCallTime);
+
+            var EndTime = " ";
+            var duration = " ";
+            var audio = " ";
+
+
+            var requestBody = "{\"x_284677_nv_softph_start_time\":\" " + startCallTime + " \",\"x_284677_nv_softph_interaction_id\":\"9d385017c611228701d22104cc95c371\",\"x_284677_nv_softph_queue\":\"test queue\",\"x_284677_nv_softph_u_direction\":\"INBOUND\",\"x_284677_nv_softph_end_time\" :\" " + EndTime + "  \", \"x_284677_nv_softph_duration\":\" " + duration + " \",\"x_284677_nv_softph_u_audio_4\":\" " + audio + " \"}";
+            console.log("reqdata", requestBody);
+
+            var client = new XMLHttpRequest();
+            //var client = new sn_ws.RESTMessageV2();
+            client.open("put", "https://dev83436.service-now.com/api/now/table/incident/46e2fee9a9fe19810049b49dee0daf58");
+
+            client.setRequestHeader('Accept', 'application/json');
+            client.setRequestHeader('Content-Type', 'application/json');
+
+            //Eg. UserName="admin", Password="admin" for this code sample.
+            client.setRequestHeader('Authorization', 'Basic ' + btoa('admin' + ':' + 'A0sOTCyjsFy5'));
+
+            client.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var responseObj = JSON.parse(this.responseText);
+                    console.log('Response1: ', responseObj.result);
+
+                }
+            };
+            client.send(requestBody);
+
+            /*var request = new sn_ws.RESTMessageV2();
+				request.setEndpoint('https://dev83436.service-now.com/api/now/table/incident/46e2fee9a9fe19810049b49dee0daf58');
+			request.setHttpMethod('PUT');
+
+			var user = 'admin';
+			var password = 'A0sOTCyjsFy5';
+
+			request.setBasicAuth(user,password);
+			request.setRequestHeader("Accept","application/json");
+			request.setRequestHeader('Content-Type','application/json');
+			request.setRequestBody("{\"correlation_id\":\"46e2fee9a9fe19810049b49dee0daf58\"}");
+			
+			var response = request.execute();
+			console.log(response.getBody());*/
+            /*curl "https://dev83436.service-now.com/api/now/table/incident/46e2fee9a9fe19810049b49dee0daf58" \
+--request PUT \
+--header "Accept:application/json" \
+--header "Content-Type:application/json" \
+--data "{\"correlation_id\":\"46e2fee9a9fe19810049b49dee0daf58\"}" \
+--user 'admin':'admin'*/
+            openFrameAPI.openServiceNowForm({
+                entity: "incident",
+                query: query
+            });
+        }
+
+
+    } else if (event.data.eventName == "CallEndNotification") {
+        console.log("Novelvox CallEndNotification Event Recived", event);
+
+        openFrameAPI.setTitle('NOVELVOX CTI');
+
+        openFrameAPI.isVisible(function callback(isVisible) {
+
+            if (isVisible) {
+                openFrameAPI.hide();
+            }
+        });
+        openFrameAPI.setTitle('');
+        openFrameAPI.setSubtitle("");
+
+        var ani = event.data.value.data.fromAddress;
+        jslog("ANI is", ani);
+
+        var EndCallTime = new Date();
+        jslog(" End time ==> ", EndCallTime);
+
+
+        var Duration = EndCallTime - startCallTime;
+        var seconds = Duration / 1000;
+        var minutes = seconds / 60;
+        var seconds = (Math.round(seconds % 60)).toFixed(2);
+        var hours = minutes / 60;
+        var minutes = minutes % 60;
+        var dataa = Math.floor(minutes) + ":" + Math.floor(seconds);
+        console.log("duration", dataa);
+        //Math.floor(seconds.tofloor(2));
+        //audio = new Audio('Cheakaudio.mp3');
+
+        if (ani == 1111) {
+            var query = 'sys_id=' + '9d385017c611228701d22104cc95c371';
+            jslog("Query >>>>" + query)
+            //
+            EndCallTime = new Date();
+            jslog(" End time ==> ", EndCallTime);
+
+            var requestBody = "{\"x_284677_nv_softph_end_time\":\" " + EndCallTime + " \",\"x_284677_nv_softph_duration\":\" " + dataa + " \"}";
+            console.log("reqdata1", requestBody);
+
+            var client = new XMLHttpRequest();
+            client.open("put", "https://dev81215.service-now.com/api/now/table/incident/9d385017c611228701d22104cc95c371");
+
+            client.setRequestHeader('Accept', 'application/json');
+            client.setRequestHeader('Content-Type', 'application/json');
+
+            client.setRequestHeader('Authorization', 'Basic ' + btoa('admin' + ':' + '19BJyLzXehVy'));
+
+            client.onreadystatechange = function() {
+                //this.readyState == this.DONE
+                if (this.readyState == 4 && this.status == 200) {
+                    var responseObj = JSON.parse(this.responseText);
+                    jslog('Response1: ', responseObj.result);
+
+                }
+            };
+            client.send(requestBody);
+
+            /* var formData = new FormData();
+             //var audio = new Audio("Cheakaudio.mp3");
+             formData.append("table_name", "incident");
+             formData.append("table_sys_id", "9d385017c611228701d22104cc95c371");
+             formData.append("uploadFile", "C:\Users\novel vox\Downloads\vcastcanadiantaxshelter264848.mp3");
+
+             var xhr = new XMLHttpRequest();
+             xhr.open("post", "https://instance.servicenow.com/api/now/attachment/upload");
+
+             //FOR BASIC AUTH
+             xhr.setRequestHeader("Accept", "application/json");
+             xhr.setRequestHeader("Content-Type", "multipart/form-data");
+             xhr.setRequestHeader("user", "admin:19BJyLzXehVy");
+
+             xhr.onreadystatechange = function() {
+                 if (this.readyState == 4 && this.status == 200) {
+                     var responseObj = JSON.parse(this.responseText);
+                     console.log('Response2: ', responseObj.result);
+                     console.log('Number of Incidents : ', responseObj.result.size());
+
+                 }
+             };
+
+
+             xhr.send(formData);*/
+            //
+            openFrameAPI.openServiceNowForm({
+                entity: "incident",
+                query: query
+            });
+        }
+
+    } else if (event.data.eventName == "AgentStateNotification") {
+        console.log("Novelvox AgentStateNotification Event Recived", event);
+        agentCurrentState = event.data.value.status;
+
+        var version = openFrameAPI.version();
+
+        console.log("API version " + version);
+
+    } else if (event.data.eventName == "APPLICATION_INITIALIZED") {
+        console.log("Application Initialized occuring *******************", event);
+        //
+        appInitializedMethod();
+        InitializedMethod();
+        InitializedM();
+
+        /* console.log("conversationid is working");
+							var interaction_id = "d631f576-9197-46b6-afd9-986cd23fd500";
+							var jsonData = {
+								"eventName": "getInteractionId",
+								"value": {
+											"interaction_id": interaction_id,
+								}
+							};
+						var win=document.getElementById("iagentFrame").contentWindow;
+				win.postMessage(jsonData, '*');
+				//parent.postMessage(jsonData, "*");*/
+
+        /*if(event.data.eventName == "interactionIdRecieved") {
+        console.log("Novelvox interaction_id Event Recived", event);
+        //event.data.data.id
+
+        var Interaction_id = event.data.data.id;
+        console.log("interaction_id", Interaction_id);
+
+    }*/
+    }
+};
+
+
+function appInitializedMethod() {
+    try {
+        var obj = new Object();
+        var qs = "?serverDetails=eyAiQ2xpZW50X0lkIjoiNDMwZDVmMDktZmY4MC00YmI2LThkZGUtYzFmYzk4YjdiYjM5IiwKICAiUmVkaXJlY3RfVXJsIjogImh0dHBzOi8vZGV2c2xjdGkubm92ZWx2b3gubmV0L2dlbmVzeXMvcGMvaW5kZXguaHRtbCIsCiAgIkVudmlyb25tZW50IjogInVzdzIucHVyZS5jbG91ZCIsCiAgImFzc29jaWF0ZUNhbGwiIDogZmFsc2UsCiAgInNjcmVlblRyYW5zZmVyIiA6IGZhbHNlLAogICJuYWRUYWIiIDogZmFsc2UsCiAgImN4aVRhYiIgOiBmYWxzZSwKICAiZ2xvYmFsU3RhdHMiIDogZmFsc2UsCiAgInRlYW1TdGF0cyIgOiBmYWxzZQp9";
+        obj['eventName'] = "ServerConfig";
+        obj['value'] = qs;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+
+
+    } catch (err) {
+        jslog("agentStateChangeNotification Error Posting Message :" +
+            err.message);
+    }
+
+}
+
+function InitializedMethod() {
+    try {
+        var obj = new Object();
+        var qs = "?serverDetails=eyAiQ2xpZW50X0lkIjoiNDMwZDVmMDktZmY4MC00YmI2LThkZGUtYzFmYzk4YjdiYjM5IiwKICAiUmVkaXJlY3RfVXJsIjogImh0dHBzOi8vZGV2c2xjdGkubm92ZWx2b3gubmV0L2dlbmVzeXMvcGMvaW5kZXguaHRtbCIsCiAgIkVudmlyb25tZW50IjogInVzdzIucHVyZS5jbG91ZCIsCiAgImFzc29jaWF0ZUNhbGwiIDogZmFsc2UsCiAgInNjcmVlblRyYW5zZmVyIiA6IGZhbHNlLAogICJuYWRUYWIiIDogZmFsc2UsCiAgImN4aVRhYiIgOiBmYWxzZSwKICAiZ2xvYmFsU3RhdHMiIDogZmFsc2UsCiAgInRlYW1TdGF0cyIgOiBmYWxzZQp9";
+        obj['eventName'] = "ServerConfig";
+        obj['value'] = qs;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+
+
+
+    } catch (err) {
+        jslog("agentStateChangeNotification Error Posting Message :" +
+            err.message);
+    }
+
+}
+
+function InitializedM() {
+    try {
+        var obj = new Object();
+        var qs = "?serverDetails=eyAiQ2xpZW50X0lkIjoiNDMwZDVmMDktZmY4MC00YmI2LThkZGUtYzFmYzk4YjdiYjM5IiwKICAiUmVkaXJlY3RfVXJsIjogImh0dHBzOi8vZGV2c2xjdGkubm92ZWx2b3gubmV0L2dlbmVzeXMvcGMvaW5kZXguaHRtbCIsCiAgIkVudmlyb25tZW50IjogInVzdzIucHVyZS5jbG91ZCIsCiAgImFzc29jaWF0ZUNhbGwiIDogZmFsc2UsCiAgInNjcmVlblRyYW5zZmVyIiA6IGZhbHNlLAogICJuYWRUYWIiIDogZmFsc2UsCiAgImN4aVRhYiIgOiBmYWxzZSwKICAiZ2xvYmFsU3RhdHMiIDogZmFsc2UsCiAgInRlYW1TdGF0cyIgOiBmYWxzZQp9";
+        obj['eventName'] = "ServerConfig";
+        obj['value'] = qs;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+
+
+
+    } catch (err) {
+        jslog("agentStateChangeNotification Error Posting Message :" +
+            err.message);
+    }
+
+}
+
+
+var sendMsg = function(eventType, data) {
+    try {
+        var obj = new Object();
+        obj['eventName'] = eventType;
+        obj['value'] = data;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+    } catch (err) {
+        console.log("FinesseGadgetUtil Error Posting Message :" +
+            err.message);
+    }
+};
+
+
+var sendMessage = function(eventType, data) {
+    try {
+        var obj = new Object();
+        obj['eventName'] = eventType;
+        obj['value'] = data;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+    } catch (err) {
+        console.log("FinesseGadgetUtil Error Posting Message :" +
+            err.message);
+    }
+};
+
+
+var receivedmessage = function(event) {
+    try {
+
+        interactiondetail(event);
+        interactionRecordingdetail(event);
+
+    } catch (err) {
+        if (err) {
+            console.log('error occured');
+            console.error('receivedmessage', err.message);
+        }
+
+    }
+}
+
+var addCTIEventMessage = window.attachEvent || window.addEventListener;
+var event = window.attachEvent ? 'onmessage' : 'message';
+addCTIEventMessage(event, receivedmessage);
+
+function interactiondetail(event) {
+    console.log("Event recieved from plugin", JSON.stringify(event.data));
+    if (event.data.eventName == "interactionIdRecieved") {
+
+        console.log("Novelvox interaction_id Event Recived");
+        console.log("Novelvox interaction_id Event Recived", event);
+        interactiondetails = event.data;
+        console.log("interactiondetail", interactiondetails);
+
+        interactioncheak("interactionIdDATA", {
+            "interaction_id": "3b626b8e-d5b6-4973-8cae-d2c64cb8f",
+
+        });
+    }
+}
+
+/*var interactionRecordingdetail = Class.create();
+interactionRecordingdetail.prototype = {
+	initialize: function() {
+	},
+ 
+	interactionRecordingdetail:function(event) {*/
+function interactionRecordingdetail(event) {
+    console.log("Event recieved  plugin", JSON.stringify(event.data));
+    if (event.data.eventName == "InteractionIdRecordingRecieved") {
+        jslog("Novelvox interactionRecording Event Recived");
+        console.log("Novelvox interactionRecording Event Recived", event);
+        Recordingdetail = event.data;
+        console.log("Recordingdetail", Recordingdetail);
+
+    }
+}
+
+//type: 'interactionRecordingdetail'
+//}
+
+var interactioncheak = function(eventType, data) {
+    try {
+        var obj = new Object();
+        obj['eventName'] = eventType;
+        obj['value'] = data;
+        var win = document.getElementById("iagentFrame").contentWindow;
+        win.postMessage(obj, '*');
+        win.parent.postMessage(obj, '*');
+    } catch (err) {
+        console.log("FinesseGadgetUtil Error Posting Message :" +
+            err.message);
+    }
+};]]></client_script>
+        <description/>
+        <direct>false</direct>
+        <endpoint>x_769265_novelvox_NV Softphone.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	<style type="text/css" media="screen">
+		html, body  { height:100%; }
+            body { margin:0; padding:0; overflow:auto; text-align:center; 
+                   background-color: #407bb3; }   
+            object:focus { outline:none; }
+		.iframeContainerStyle{
+			margin-right: 0px;
+			margin-left: 0px;
+			margin-bottom: 0px;
+			margin-top: 0px;
+			border-width:0px;
+			
+         	border-bottom-style:solid;
+			border-bottom-color:#FFF;
+			
+         	border-left-style:ridge;
+			border-left-color:#CCC;
+         	
+			border-top-style:ridge;
+			border-top-color:#CCC;
+			
+			border-right-style:solid;
+			border-right-color:#FFF;
+			}
+			
+			#pageGadgetContainer .iframeContainerStyle{
+			margin-bottom: 0px;
+			}
+	</style>	
+	<div id="mydiv" class="iframeContainerStyle">
+		<!-- <iframe allow="camera *; microphone *; autoplay *" src="https://devslcti.novelvox.net/genesys/pc/index.html" id="iagentFrame" frameBorder="0" width="100%" height="450px"> </iframe>-->  
+		<iframe src="https://demoslcti.novelvox.net/cisco/fin/index.html?cti=sim" id="iagentFrame" frameBorder="0" width="100%" height="450px"> </iframe>
+		<!-- <iframe src="https://www.nad.novelvox.net/nad?module=ucm_con&amp;cti=ucsim" id="iagentFrame" frameBorder="0" width="100%" height="450px"> </iframe> -->
+	</div>
+</j:jelly>]]></html>
+        <name>NV Softphone</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-03-02 07:30:50</sys_created_on>
+        <sys_id>fd792ae81bc20110f6e242e4cc4bcb9c</sys_id>
+        <sys_mod_count>123</sys_mod_count>
+        <sys_name>NV Softphone</sys_name>
+        <sys_package display_value="NovelVox" source="x_769265_novelvox">ead6aae41bc20110f6e242e4cc4bcb03</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="NovelVox">ead6aae41bc20110f6e242e4cc4bcb03</sys_scope>
+        <sys_update_name>sys_ui_page_fd792ae81bc20110f6e242e4cc4bcb9c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-03-22 07:52:49</sys_updated_on>
+    </sys_ui_page>
+</record_update>

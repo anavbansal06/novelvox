@@ -1,0 +1,1377 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="DELETE">
+        <category>general</category>
+        <client_script><![CDATA[var SNC;
+(SNC = window.SNC || {}).DataValidation = function() {
+    var e = 256,
+        n = 4400,
+        t = ["sysparm_stack", "sysparm_goto_url"];
+
+    function i(e) {
+        throw e
+    }
+    return {
+        contains: function(e, n) {
+            for (var t in e)
+                if (e.hasOwnProperty(t) && e[t] == n) return !0;
+            return !1
+        },
+        stringValidation: function(n, t, o) {
+            return "string" != typeof n && i("Input is incorrect. Only string is supported"), t && o ? n.length > o && i("Length cannot be more than " + o) : t && n.length > e && i("Length cannot be more than " + e), !0
+        },
+        numberValidation: function(e) {
+            return ("number" != typeof e || e < 0) && i("Input is incorrect. Only number is supported and it should be greater than 0"), !0
+        },
+        objectValidation: function(e) {
+            return null != e && "object" == typeof e || i("Input is incorrect. Only object is supported"), !0
+        },
+        objectSizeValidation: function(e) {
+            return !(e.length > n)
+        },
+        queryStringValidation: function(e) {
+            for (var n = 0; n < t.length; n++) - 1 != e.indexOf(t[n]) && i("Url query string cannot have redirects");
+            return !0
+        },
+        customURLValidation: function(e) {
+            return 1 == /^(?:[a-z]+:)?\/\//i.test(e) && i("Custom url cannot be absolute"), !0
+        },
+        throwError: i
+    }
+}(), (SNC = window.SNC || {}).Communication = function() {
+    var e = {
+            INIT: "openframe_init",
+            SHOW: "openframe_show",
+            HIDE: "openframe_hide",
+            VISIBLE: "openframe_visible",
+            REQUEST: "openframe_request",
+            RESPONSE: "openframe_response",
+            GET_CONFIG: "openframe_get_config",
+            SET_SIZE: "openframe_set_size",
+            SET_HEADER_TITLE: "openframe_set_header_title",
+            SET_HEADER_TITLE_ICON: "openframe_set_header_title_icon",
+            SET_HEADER_ICONS: "openframe_set_header_icons",
+            SET_TOP_FRAME_URL: "openframe_set_top_frame_url",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        n = "NOW.PostMessage",
+        t = 3e3,
+        i = {},
+        o = "*",
+        r = SNC.DataValidation;
+
+    function a(t, i, a) {
+        var s, E, c = "";
+        r.contains(e, t) && (E = {
+            type: n,
+            eventName: t,
+            args: i
+        }, top.postMessage ? o || a ? (s = JSON.stringify(E), r.objectSizeValidation(s) || (c = "Message payload exceeds the supported limit")) : c = "The Top domain is undefined for cross domain messaging" : c = "Browser does not support cross domain messaging", c ? u(e.COMMUNICATION_FAILURE, c) : top.postMessage(s, o))
+    }
+
+    function s(e, n) {
+        var t = i[e];
+        t || (t = [], i[e] = t), t.push(n)
+    }
+
+    function u(e, n) {
+        var t, o = i[e];
+        if (o && 0 != o.length)
+            for (t = 0; t < o.length; ++t) {
+                o[t].call(null, n)
+            }
+    }
+    return SNC.registeredPostMessageHandler || window.postMessage && (window.addEventListener("message", function(e) {
+        var t;
+        try {
+            t = JSON.parse(e.data)
+        } catch (e) {
+            return
+        }!t.type != n && u(t.eventName, t.args)
+    }, !1), SNC.registeredPostMessageHandler = !0), {
+        EVENTS: e,
+        init: function(n, i) {
+            ! function(n, i, r) {
+                var a = !1;
+                try {
+                    n.request(e.INIT, {}, function(e) {
+                        a || (a = !0, o = e.topDomain, i(e.result))
+                    }, r, !0)
+                } catch (e) {
+                    a = !0, r(e)
+                }
+                setTimeout(function() {
+                    a || (a = !0, r("Openframe init request timed out"))
+                }, t)
+            }(this, n, i)
+        },
+        contains: function(e, n) {
+            for (var t in e)
+                if (e.hasOwnProperty(t) && e[t] == n) return !0;
+            return !1
+        },
+        publish: a,
+        subscribe: s,
+        request: function(n, t, o, u, E) {
+            if (r.contains(e, n)) {
+                var c = n + "_" + (new Date).getTime() * Math.random(),
+                    l = {},
+                    _ = this;
+                l.id = c, l.method = n, l.payload = t, a(e.REQUEST, l, E), s(e.RESPONSE, function(e) {
+                    var n, t, r;
+                    c == e.context.id && (n = _.EVENTS.RESPONSE, t = arguments.callee, (r = i[n]) && 0 != r.length && -1 != r.indexOf(t) && r.splice(r.indexOf(t), 1), e.isSuccess ? o(e.context.result) : u(e.context.result))
+                })
+            }
+        }
+    }
+}(), SNC.OpenFrame = function() {
+    var e = "1.0.2",
+        n = SNC.Communication,
+        t = SNC.DataValidation;
+    return {
+        EVENTS: {
+            HEADER_ICON_CLICKED: "openframe_header_icon_clicked",
+            OPENFRAME_SHOWN: "openframe_shown",
+            OPENFRAME_HIDDEN: "openframe_hidden",
+            OPENFRAME_BEFORE_DESTROY: "openframe_before_destroy",
+            COMMUNICATION_EVENT: "openframe_communication",
+            //COMMUNICATION_EVENT:  "openframe_communication_Event",
+            //openframe_awa_agent_presence: "openframe_awa_agent_presence",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        init: function(e, t, i) {
+            n.init(function() {
+                n.request(n.EVENTS.GET_CONFIG, e, t, i)
+            }, i)
+        },
+        version: function() {
+            return e
+        },
+        show: function() {
+            n.publish(n.EVENTS.SHOW)
+        },
+        hide: function() {
+            n.publish(n.EVENTS.HIDE)
+        },
+        isVisible: function(e, t) {
+            n.request(n.EVENTS.VISIBLE, {}, e, t)
+        },
+        subscribe: function(e, i) {
+            n.contains(this.EVENTS, e) ? n.subscribe(e, i) : t.throwError(e + " is not a valid event for subscription")
+        },
+        setTitle: function(e) {
+            t.stringValidation(e, !0) && n.publish(n.EVENTS.SET_HEADER_TITLE, {
+                title: e
+            })
+        },
+        setSubtitle: function(e) {
+            t.stringValidation(e, !0) && n.publish(n.EVENTS.SET_HEADER_TITLE, {
+                subtitle: e
+            })
+        },
+        setSize: function(e, i) {
+            t.numberValidation(e) && t.numberValidation(i) && n.publish(n.EVENTS.SET_SIZE, {
+                width: e,
+                height: i
+            })
+        },
+        setIcons: function(e) {
+            t.objectValidation(e) && n.publish(n.EVENTS.SET_HEADER_ICONS, e)
+        },
+        setTitleIcon: function(e) {
+            t.objectValidation(e) && n.publish(n.EVENTS.SET_HEADER_TITLE_ICON, e)
+        },
+        openServiceNowForm: function(e) {
+            t.objectValidation(e) && e.query && t.queryStringValidation(e.query) && n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                form: e
+            })
+        },
+        openServiceNowList: function(e) {
+            t.objectValidation(e) && e.query && t.queryStringValidation(e.query) && n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                list: e
+            })
+        },
+        openCustomURL: function(e) {
+            var i = {
+                url: e
+            };
+            t.stringValidation(i.url, !0, 2083) && t.customURLValidation(i.url) && n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                url: i
+            })
+        }
+    }
+}();
+
+
+var openFrameAPI = SNC.OpenFrame;
+
+
+var config = {
+    title: "Interaction_details_popup",
+};
+
+function handleCommunicationEvent(context) {
+    //console.log("Communication from NV_SOFTPHONE");
+    //console.log("Communication from NV_SOFTPHONE", context);
+    if (context.type == "Interaction_DATA") {
+        console.log("InteractionIdRecordingRecieved", context);
+    }
+}
+
+function initSuccess(snConfig) {
+    console.log("Novelvox >>>> openframe configuration", snConfig);
+    //register for communication event from TopFrame
+    openFrameAPI.subscribe(openFrameAPI.EVENTS.COMMUNICATION_EVENT,
+        handleCommunicationEvent);
+
+}
+
+function initFailure(error) {
+    console.log("Novelvox >>>> OpenFrame init failed..", error);
+}
+openFrameAPI.init(config, initSuccess, initFailure);
+
+conversationid();
+cheak();
+
+var dialog = new GlideDialogWindow.get();
+var Interaction_id_detail = dialog.getPreference("Interaction_id_detail");
+console.log("Interaction_id_detail is the", Interaction_id_detail);
+
+
+//************************************************************************************************************
+
+var receivedmessage = function(event) {
+    try {
+        //mynew 
+        //console.log("enter receiveCTIEventMessage ", event);
+        interactionpopupdetail(event);
+    } catch (err) {
+        if (err) {
+            console.log('error occured');
+            console.error('receivedmessage', err.message);
+        }
+
+    }
+}
+
+var addCTIEventMessage = window.attachEvent || window.addEventListener;
+var event = window.attachEvent ? 'onmessage' : 'message';
+addCTIEventMessage(event, receivedmessage);
+
+function interactionpopupdetail(event) {
+    if (event.data.eventName == "interactionIdRecieved") {
+        console.log("Popup interaction_id Event Recived");
+        console.log("Popup interaction_id Event Recived", event);
+
+
+    }
+}
+
+
+
+function cheak() {
+
+    document.getElementById("nameid").innerHTML = "Alessandro casolla";
+    document.getElementById("sipid").innerHTML = "Sip device";
+    document.getElementById("image1").src = "profileimage.png";
+    document.getElementById("image3").src = "audioimage.png";
+    document.getElementById("audioid").src = "Cheakaudio.mp3";
+    document.getElementById("image2").src = "profileimage.png";
+    document.getElementById("mobileno").innerHTML += "39 345 801 323";
+    document.getElementById("tdataid").innerHTML = "Call";
+    document.getElementById("tdurationid").innerHTML = "0.30";
+    document.getElementById("tdirectionid").innerHTML = "Inbound";
+    document.getElementById("tendid").innerHTML = "Monday, February 11, 2022 09:45:28 AM";
+    document.getElementById("tstartid").innerHTML = "Monday, February 11, 2022 09:45:28 AM";
+    document.getElementById("tqueueid").innerHTML = "test queue";
+    document.getElementById("buttonid").href = "#";
+    document.getElementById("delete_date2").innerHTML = "None";
+    document.getElementById("archive_date2").innerHTML = "None";
+    document.getElementById("downloadrecording").download = "Cheakaudio.mp3";
+    document.getElementById("downloadrecording").href = "Cheakaudio.mp3";
+}
+//getInteractionIdRecording
+//getInteractionId
+//interactionIdRecieved
+//interactionIdRecieved
+//InteractionIdRecordingRecieved
+function conversationid() {
+    console.log("conversationid is working");
+
+    var interaction_id = "3b626b8e-d5b6-4973-8cae-d2c64cb8f836";
+    var Payload = {
+        "type": "Interaction_ID",
+        "data": interaction_id
+    };
+
+    var context = {
+        "payload": Payload,
+        "method": "openframe_communication"
+    };
+    CustomEvent.fireAll("openframe_request", context);
+
+
+}
+
+
+
+//var win = document.getElementById("iagentFrame").contentWindow;
+//   win.postMessage(obj, '*');]]></client_script>
+        <description/>
+        <direct>false</direct>
+        <endpoint>x_769265_novelvox_Interaction_details_popup.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    </link>
+	<style type="text/css" media="screen">
+		#internalparticipant{
+			 border-radius: 10%;
+			width: 19%;
+		}
+		
+		.card1{
+			 border-radius: 10%;
+		}
+		.card-footer{
+			border-radius: 5%;
+            margin-top: 3%;
+        }
+		#internal_participant{
+		border-radius: 10%
+		margin-bottom: 10%;
+		margin-top: -10%
+		}
+		#internalid{
+			background-color:  #EBECF0;
+			height: 195px;
+			border-radius: 5%;
+		}
+		#image1{
+			 border-radius: 90%;
+		     padding-top: 5%;
+			width: 100px;
+            height: 100px;
+
+        }
+		.card-img-top{
+		width: 400px;
+		}
+		#sipid{
+			font-size: small;
+		}
+		#imagecard{
+			border-radius: 5%
+		}
+		.card-img-top{
+		width: 400px;
+		}
+		#audioid{
+			margin-top: 4%;
+			background-color: #FFFFFF;
+		}
+		#image3{
+			margin-top: 5%;
+		}
+		#anootation_input{
+			margin-top: 2%;
+			width: 40%;
+			height: 30px;
+			font-size: medium;
+		}
+		#anootation{
+			margin-top: 2%;
+			width: 15%;
+			height: 30px;
+			border-radius: 10%
+			font-size: large;
+			background-color:  #dcdcdc;
+		}
+		#external_id{
+			border-radius: 10%;
+			width: 19%;
+		}
+		.text-muted{
+            font-size: large;
+        }
+		#externalid{
+			background-color:  #EBECF0;
+			height: 195px;
+			border-radius: 5%;
+		}
+		#image2{
+			 border-radius: 90%;
+		     padding-top: 5%;
+			width: 100px;
+            height: 100px;
+        }
+		#mobileno{
+			font-size: medium;
+		}
+		#mobileno{
+			font-size: small;
+		}
+		 .interactiondiv{
+		margin-left: 5%;
+        }
+		 #details{
+           font-size: medium;
+		}
+		 #leftbox{
+            background-color: #FFFFFF;
+			float: left;
+            width: 50%;
+            height: 220px;
+			 border-bottom-width: 2px;
+        }
+		#interactionmatrics{
+			 border-bottom-width: 2px;
+		}
+		 .tableclass{
+            width: 100%;
+			height: 100%;
+            font-size: medium;
+            margin-top: 1%;
+        }
+		#data1{
+			padding-top: 3%;
+            margin-top: 80%;
+            font-size: medium;
+        }
+		#tdataid{
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+		#tstartid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tendid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tdirectionid {
+			padding-top: 3%;			
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tqueueid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 60%;
+            font-size: medium;
+        }
+        #tdurationid{
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 60%;
+            font-size: medium;
+        }
+		#recording_info{
+            margin-top: 3%;
+			background-color: #FFFFFF;
+        }
+		.recording_table{
+            margin-top: 1%;
+			font-size: medium;
+        }
+		#edit {
+            padding-left: 150%;
+        }
+		.buttonclass {
+            border: 0ch;
+        }
+		 #recording_type1 {
+            padding-top: 15%;
+        }
+		 .archive_date {
+            padding-top: 8%;
+        }
+		 #archive_date1 {
+            padding-left: 8%;
+        }
+		 #archive_date2 {
+            padding-left: 150%;
+        }
+		.delete_date {
+            padding-top: 8%;
+        }
+		 #delete_date2 {
+            padding-left: 150%;
+        }
+		 #delete_date1 {
+            padding-left: 8%;
+        }
+		#downloadrecording{
+            padding-top: 10%;
+            padding-left: 5%;
+        }
+		.card-group {
+			border-radius: 10%;
+            padding: 3%;
+            width: 900px;
+            height: 320px;
+            margin-left: 3%;
+        }
+	</style>
+	<div id="cardbox" class="card-group" >
+	<div id="internalparticipant" class="card1">
+	<div class="card-footer">
+				<center>
+                <small class="text-muted" id="internal_participant">Internal participant </small>
+				</center>
+            </div>
+			<div id="internalid">
+            <center>
+                <img id="image1" src="" class="card-img-top" alt="..."></img>
+            </center>
+            <div class="card-body">
+                <center>
+					<h4 class="card-title"  id="nameid"> </h4>
+					<h5 class="card-text" id="sipid"> </h5>
+                </center>
+            </div>
+			</div>
+        </div>
+		<div id="imagecard" class="card">
+			<center>
+            <img id="image3" src="" class="card-img-top" alt="..." ></img>
+           <audio id="audioid" controls="controls" src=""  type="audio/mpeg"> </audio>
+			</center>
+            <div class="card-body">
+				<center>
+				<input id ="anootation_input" type="text" placeholder="Add Annotation" name="Add Annotation"></input>
+                <button id="anootation" type="submit">Annotate</button>
+				</center>
+            </div>
+        </div>
+		 <div id="external_id" class="card3" style="border-radius: 10%;">
+            <div class="card-footer">
+				<center>
+                <small class="text-muted">External participant </small>
+				</center>
+            </div>
+			<div id="externalid">
+            <center>
+                <img id="image2" src="" class="card-img-top" alt="..."></img>
+            </center>
+            <div class="card-body">
+                <center>
+					<h4 class="card-title">MobileNumber, Italy</h4>
+                   
+					<h5 class="card-text" id="mobileno"> + </h5>
+                </center>
+            </div>
+			</div>
+        </div>
+	</div>
+	<div  class="interactiondiv">
+        <ul class="nav nav-tabs" id="details">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#pills-home">Details</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#pills-profile" tabindex="-1" aria-disabled="true">Timeline</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#pills-contact" tabindex="-1" aria-disabled="true">Quality
+                    summary</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#pills-Audit" tabindex="-1" aria-disabled="true">Audit Trail</a>
+            </li>
+        </ul>
+		<div class="card-footer"  id="leftbox">
+			<u> <large class="text-muted" id="interactionmatrics"> Interaction Matrics </large></u>
+			<div class="tab-content" id="pills-tabContent">
+			 <div  id="interaction_id" style="padding-top: 1%;">
+			<table class="tableclass" id="table">
+                            <tr>
+                                <th> </th>
+                                <th> </th>
+                            </tr>
+                            <tr>
+                                <td class="tabledata" id="data1">Interaction Type</td>
+                                <td class="tdata" id="tdataid"></td>
+                            </tr>
+                            <tr>
+                                <td class="tabledata" id="data1">Start Time</td>
+                                <td class="tdata" id="tstartid"></td>
+                            </tr>
+                            <tr>
+                                <td class="tabledata" id="data1">End Time</td>
+                                <td class="tdata" id="tendid"></td>
+                            </tr>
+                            <tr>
+                                <td class="tabledata" id="data1">Direction</td>
+                                <td class="tdata" id="tdirectionid"></td>
+                            </tr>
+                            <tr>
+                                <td class="tabledata" id="data1">Queue</td>
+                                <td class="tdata" id="tqueueid"></td>
+                            </tr>
+                            <tr class="tablerow" id="tablerowid">
+                                <td class="tabledata" id="data1">Duration</td>
+                                <td class="tdata" id="tdurationid"></td>
+                            </tr>
+                        </table>
+			</div>
+				</div>
+        </div>
+		<div class="card-footer" id="recording_info">
+			<u><large class="text-muted"> Recording Information                                                </large></u>
+			<table class="recording_table">
+                <tr class="recordingrow1" id="recordingrow1">
+                    <td class="recording1" id="recording1">Recording 1</td>
+                    <td class="edit" id="edit">
+                        <a id="buttonid" class="buttonclass" href="" role="button" aria-disabled="true">Edit</a>
+                    </td>
+                </tr>
+                <tr class="recordingtdd">
+                    <td id="recording_type1">Recording Type</td>
+                </tr>
+                <tr class="recordingtdd" id="recording_type">
+                    <td class="archive_date" id="archive_date1">Archive Date :</td>
+                    <td class="archive_date" id="archive_date2"></td>
+                </tr>
+                <tr class="recordingtdd" id="recording_type">
+                    <td class="delete_date" id="delete_date1">Delete Date :</td>
+                    <td class="delete_date" id="delete_date2"></td>
+                </tr>
+                <tr>
+                    <td id="downloadrecording">
+                        <a download="" href=" ">
+                           Download Recording
+                          </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+	</div>
+</j:jelly>]]></html>
+        <name>Interaction_details_popup</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-03-02 12:53:16</sys_created_on>
+        <sys_id>4a24b3e01b0a0110f6e242e4cc4bcb34</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Interaction_details_popup</sys_name>
+        <sys_package display_value="NovelVox" source="x_769265_novelvox">ead6aae41bc20110f6e242e4cc4bcb03</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="NovelVox">ead6aae41bc20110f6e242e4cc4bcb03</sys_scope>
+        <sys_update_name>sys_ui_page_4a24b3e01b0a0110f6e242e4cc4bcb34</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-03-02 12:57:12</sys_updated_on>
+    </sys_ui_page>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="NovelVox">ead6aae41bc20110f6e242e4cc4bcb03</application>
+        <file_path/>
+        <instance_id>680409d5db4d3b043050ac44d496190d</instance_id>
+        <instance_name>dev83436</instance_name>
+        <name>sys_ui_page_4a24b3e01b0a0110f6e242e4cc4bcb34</name>
+        <payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_ui_page"&gt;&lt;sys_ui_page action="INSERT_OR_UPDATE"&gt;&lt;category&gt;general&lt;/category&gt;&lt;client_script&gt;&lt;![CDATA[var SNC;
+(SNC = window.SNC || {}).DataValidation = function() {
+    var e = 256,
+        n = 4400,
+        t = ["sysparm_stack", "sysparm_goto_url"];
+
+    function i(e) {
+        throw e
+    }
+    return {
+        contains: function(e, n) {
+            for (var t in e)
+                if (e.hasOwnProperty(t) &amp;&amp; e[t] == n) return !0;
+            return !1
+        },
+        stringValidation: function(n, t, o) {
+            return "string" != typeof n &amp;&amp; i("Input is incorrect. Only string is supported"), t &amp;&amp; o ? n.length &gt; o &amp;&amp; i("Length cannot be more than " + o) : t &amp;&amp; n.length &gt; e &amp;&amp; i("Length cannot be more than " + e), !0
+        },
+        numberValidation: function(e) {
+            return ("number" != typeof e || e &lt; 0) &amp;&amp; i("Input is incorrect. Only number is supported and it should be greater than 0"), !0
+        },
+        objectValidation: function(e) {
+            return null != e &amp;&amp; "object" == typeof e || i("Input is incorrect. Only object is supported"), !0
+        },
+        objectSizeValidation: function(e) {
+            return !(e.length &gt; n)
+        },
+        queryStringValidation: function(e) {
+            for (var n = 0; n &lt; t.length; n++) - 1 != e.indexOf(t[n]) &amp;&amp; i("Url query string cannot have redirects");
+            return !0
+        },
+        customURLValidation: function(e) {
+            return 1 == /^(?:[a-z]+:)?\/\//i.test(e) &amp;&amp; i("Custom url cannot be absolute"), !0
+        },
+        throwError: i
+    }
+}(), (SNC = window.SNC || {}).Communication = function() {
+    var e = {
+            INIT: "openframe_init",
+            SHOW: "openframe_show",
+            HIDE: "openframe_hide",
+            VISIBLE: "openframe_visible",
+            REQUEST: "openframe_request",
+            RESPONSE: "openframe_response",
+            GET_CONFIG: "openframe_get_config",
+            SET_SIZE: "openframe_set_size",
+            SET_HEADER_TITLE: "openframe_set_header_title",
+            SET_HEADER_TITLE_ICON: "openframe_set_header_title_icon",
+            SET_HEADER_ICONS: "openframe_set_header_icons",
+            SET_TOP_FRAME_URL: "openframe_set_top_frame_url",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        n = "NOW.PostMessage",
+        t = 3e3,
+        i = {},
+        o = "*",
+        r = SNC.DataValidation;
+
+    function a(t, i, a) {
+        var s, E, c = "";
+        r.contains(e, t) &amp;&amp; (E = {
+            type: n,
+            eventName: t,
+            args: i
+        }, top.postMessage ? o || a ? (s = JSON.stringify(E), r.objectSizeValidation(s) || (c = "Message payload exceeds the supported limit")) : c = "The Top domain is undefined for cross domain messaging" : c = "Browser does not support cross domain messaging", c ? u(e.COMMUNICATION_FAILURE, c) : top.postMessage(s, o))
+    }
+
+    function s(e, n) {
+        var t = i[e];
+        t || (t = [], i[e] = t), t.push(n)
+    }
+
+    function u(e, n) {
+        var t, o = i[e];
+        if (o &amp;&amp; 0 != o.length)
+            for (t = 0; t &lt; o.length; ++t) {
+                o[t].call(null, n)
+            }
+    }
+    return SNC.registeredPostMessageHandler || window.postMessage &amp;&amp; (window.addEventListener("message", function(e) {
+        var t;
+        try {
+            t = JSON.parse(e.data)
+        } catch (e) {
+            return
+        }!t.type != n &amp;&amp; u(t.eventName, t.args)
+    }, !1), SNC.registeredPostMessageHandler = !0), {
+        EVENTS: e,
+        init: function(n, i) {
+            ! function(n, i, r) {
+                var a = !1;
+                try {
+                    n.request(e.INIT, {}, function(e) {
+                        a || (a = !0, o = e.topDomain, i(e.result))
+                    }, r, !0)
+                } catch (e) {
+                    a = !0, r(e)
+                }
+                setTimeout(function() {
+                    a || (a = !0, r("Openframe init request timed out"))
+                }, t)
+            }(this, n, i)
+        },
+        contains: function(e, n) {
+            for (var t in e)
+                if (e.hasOwnProperty(t) &amp;&amp; e[t] == n) return !0;
+            return !1
+        },
+        publish: a,
+        subscribe: s,
+        request: function(n, t, o, u, E) {
+            if (r.contains(e, n)) {
+                var c = n + "_" + (new Date).getTime() * Math.random(),
+                    l = {},
+                    _ = this;
+                l.id = c, l.method = n, l.payload = t, a(e.REQUEST, l, E), s(e.RESPONSE, function(e) {
+                    var n, t, r;
+                    c == e.context.id &amp;&amp; (n = _.EVENTS.RESPONSE, t = arguments.callee, (r = i[n]) &amp;&amp; 0 != r.length &amp;&amp; -1 != r.indexOf(t) &amp;&amp; r.splice(r.indexOf(t), 1), e.isSuccess ? o(e.context.result) : u(e.context.result))
+                })
+            }
+        }
+    }
+}(), SNC.OpenFrame = function() {
+    var e = "1.0.2",
+        n = SNC.Communication,
+        t = SNC.DataValidation;
+    return {
+        EVENTS: {
+            HEADER_ICON_CLICKED: "openframe_header_icon_clicked",
+            OPENFRAME_SHOWN: "openframe_shown",
+            OPENFRAME_HIDDEN: "openframe_hidden",
+            OPENFRAME_BEFORE_DESTROY: "openframe_before_destroy",
+            COMMUNICATION_EVENT: "openframe_communication",
+            //COMMUNICATION_EVENT:  "openframe_communication_Event",
+            //openframe_awa_agent_presence: "openframe_awa_agent_presence",
+            COMMUNICATION_FAILURE: "openframe_communication_failure"
+        },
+        init: function(e, t, i) {
+            n.init(function() {
+                n.request(n.EVENTS.GET_CONFIG, e, t, i)
+            }, i)
+        },
+        version: function() {
+            return e
+        },
+        show: function() {
+            n.publish(n.EVENTS.SHOW)
+        },
+        hide: function() {
+            n.publish(n.EVENTS.HIDE)
+        },
+        isVisible: function(e, t) {
+            n.request(n.EVENTS.VISIBLE, {}, e, t)
+        },
+        subscribe: function(e, i) {
+            n.contains(this.EVENTS, e) ? n.subscribe(e, i) : t.throwError(e + " is not a valid event for subscription")
+        },
+        setTitle: function(e) {
+            t.stringValidation(e, !0) &amp;&amp; n.publish(n.EVENTS.SET_HEADER_TITLE, {
+                title: e
+            })
+        },
+        setSubtitle: function(e) {
+            t.stringValidation(e, !0) &amp;&amp; n.publish(n.EVENTS.SET_HEADER_TITLE, {
+                subtitle: e
+            })
+        },
+        setSize: function(e, i) {
+            t.numberValidation(e) &amp;&amp; t.numberValidation(i) &amp;&amp; n.publish(n.EVENTS.SET_SIZE, {
+                width: e,
+                height: i
+            })
+        },
+        setIcons: function(e) {
+            t.objectValidation(e) &amp;&amp; n.publish(n.EVENTS.SET_HEADER_ICONS, e)
+        },
+        setTitleIcon: function(e) {
+            t.objectValidation(e) &amp;&amp; n.publish(n.EVENTS.SET_HEADER_TITLE_ICON, e)
+        },
+        openServiceNowForm: function(e) {
+            t.objectValidation(e) &amp;&amp; e.query &amp;&amp; t.queryStringValidation(e.query) &amp;&amp; n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                form: e
+            })
+        },
+        openServiceNowList: function(e) {
+            t.objectValidation(e) &amp;&amp; e.query &amp;&amp; t.queryStringValidation(e.query) &amp;&amp; n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                list: e
+            })
+        },
+        openCustomURL: function(e) {
+            var i = {
+                url: e
+            };
+            t.stringValidation(i.url, !0, 2083) &amp;&amp; t.customURLValidation(i.url) &amp;&amp; n.publish(n.EVENTS.SET_TOP_FRAME_URL, {
+                url: i
+            })
+        }
+    }
+}();
+
+
+var openFrameAPI = SNC.OpenFrame;
+
+
+var config = {
+    title: "Interaction_details_popup",
+};
+
+function handleCommunicationEvent(context) {
+    //console.log("Communication from NV_SOFTPHONE");
+    //console.log("Communication from NV_SOFTPHONE", context);
+    if (context.type == "Interaction_DATA") {
+        console.log("InteractionIdRecordingRecieved", context);
+    }
+}
+
+function initSuccess(snConfig) {
+    console.log("Novelvox &gt;&gt;&gt;&gt; openframe configuration", snConfig);
+    //register for communication event from TopFrame
+    openFrameAPI.subscribe(openFrameAPI.EVENTS.COMMUNICATION_EVENT,
+        handleCommunicationEvent);
+
+}
+
+function initFailure(error) {
+    console.log("Novelvox &gt;&gt;&gt;&gt; OpenFrame init failed..", error);
+}
+openFrameAPI.init(config, initSuccess, initFailure);
+
+conversationid();
+cheak();
+
+var dialog = new GlideDialogWindow.get();
+var Interaction_id_detail = dialog.getPreference("Interaction_id_detail");
+console.log("Interaction_id_detail is the", Interaction_id_detail);
+
+
+//************************************************************************************************************
+
+var receivedmessage = function(event) {
+    try {
+        //mynew 
+        //console.log("enter receiveCTIEventMessage ", event);
+        interactionpopupdetail(event);
+    } catch (err) {
+        if (err) {
+            console.log('error occured');
+            console.error('receivedmessage', err.message);
+        }
+
+    }
+}
+
+var addCTIEventMessage = window.attachEvent || window.addEventListener;
+var event = window.attachEvent ? 'onmessage' : 'message';
+addCTIEventMessage(event, receivedmessage);
+
+function interactionpopupdetail(event) {
+    if (event.data.eventName == "interactionIdRecieved") {
+        console.log("Popup interaction_id Event Recived");
+        console.log("Popup interaction_id Event Recived", event);
+
+
+    }
+}
+
+
+
+function cheak() {
+
+    document.getElementById("nameid").innerHTML = "Alessandro casolla";
+    document.getElementById("sipid").innerHTML = "Sip device";
+    document.getElementById("image1").src = "profileimage.png";
+    document.getElementById("image3").src = "audioimage.png";
+    document.getElementById("audioid").src = "Cheakaudio.mp3";
+    document.getElementById("image2").src = "profileimage.png";
+    document.getElementById("mobileno").innerHTML += "39 345 801 323";
+    document.getElementById("tdataid").innerHTML = "Call";
+    document.getElementById("tdurationid").innerHTML = "0.30";
+    document.getElementById("tdirectionid").innerHTML = "Inbound";
+    document.getElementById("tendid").innerHTML = "Monday, February 11, 2022 09:45:28 AM";
+    document.getElementById("tstartid").innerHTML = "Monday, February 11, 2022 09:45:28 AM";
+    document.getElementById("tqueueid").innerHTML = "test queue";
+    document.getElementById("buttonid").href = "#";
+    document.getElementById("delete_date2").innerHTML = "None";
+    document.getElementById("archive_date2").innerHTML = "None";
+    document.getElementById("downloadrecording").download = "Cheakaudio.mp3";
+    document.getElementById("downloadrecording").href = "Cheakaudio.mp3";
+}
+//getInteractionIdRecording
+//getInteractionId
+//interactionIdRecieved
+//interactionIdRecieved
+//InteractionIdRecordingRecieved
+function conversationid() {
+    console.log("conversationid is working");
+
+    var interaction_id = "3b626b8e-d5b6-4973-8cae-d2c64cb8f836";
+    var Payload = {
+        "type": "Interaction_ID",
+        "data": interaction_id
+    };
+
+    var context = {
+        "payload": Payload,
+        "method": "openframe_communication"
+    };
+    CustomEvent.fireAll("openframe_request", context);
+
+
+}
+
+
+
+//var win = document.getElementById("iagentFrame").contentWindow;
+//   win.postMessage(obj, '*');]]&gt;&lt;/client_script&gt;&lt;description/&gt;&lt;direct&gt;false&lt;/direct&gt;&lt;endpoint&gt;x_769265_novelvox_Interaction_details_popup.do&lt;/endpoint&gt;&lt;html&gt;&lt;![CDATA[&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null"&gt;
+	&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"&gt;
+    &lt;/link&gt;
+	&lt;style type="text/css" media="screen"&gt;
+		#internalparticipant{
+			 border-radius: 10%;
+			width: 19%;
+		}
+		
+		.card1{
+			 border-radius: 10%;
+		}
+		.card-footer{
+			border-radius: 5%;
+            margin-top: 3%;
+        }
+		#internal_participant{
+		border-radius: 10%
+		margin-bottom: 10%;
+		margin-top: -10%
+		}
+		#internalid{
+			background-color:  #EBECF0;
+			height: 195px;
+			border-radius: 5%;
+		}
+		#image1{
+			 border-radius: 90%;
+		     padding-top: 5%;
+			width: 100px;
+            height: 100px;
+
+        }
+		.card-img-top{
+		width: 400px;
+		}
+		#sipid{
+			font-size: small;
+		}
+		#imagecard{
+			border-radius: 5%
+		}
+		.card-img-top{
+		width: 400px;
+		}
+		#audioid{
+			margin-top: 4%;
+			background-color: #FFFFFF;
+		}
+		#image3{
+			margin-top: 5%;
+		}
+		#anootation_input{
+			margin-top: 2%;
+			width: 40%;
+			height: 30px;
+			font-size: medium;
+		}
+		#anootation{
+			margin-top: 2%;
+			width: 15%;
+			height: 30px;
+			border-radius: 10%
+			font-size: large;
+			background-color:  #dcdcdc;
+		}
+		#external_id{
+			border-radius: 10%;
+			width: 19%;
+		}
+		.text-muted{
+            font-size: large;
+        }
+		#externalid{
+			background-color:  #EBECF0;
+			height: 195px;
+			border-radius: 5%;
+		}
+		#image2{
+			 border-radius: 90%;
+		     padding-top: 5%;
+			width: 100px;
+            height: 100px;
+        }
+		#mobileno{
+			font-size: medium;
+		}
+		#mobileno{
+			font-size: small;
+		}
+		 .interactiondiv{
+		margin-left: 5%;
+        }
+		 #details{
+           font-size: medium;
+		}
+		 #leftbox{
+            background-color: #FFFFFF;
+			float: left;
+            width: 50%;
+            height: 220px;
+			 border-bottom-width: 2px;
+        }
+		#interactionmatrics{
+			 border-bottom-width: 2px;
+		}
+		 .tableclass{
+            width: 100%;
+			height: 100%;
+            font-size: medium;
+            margin-top: 1%;
+        }
+		#data1{
+			padding-top: 3%;
+            margin-top: 80%;
+            font-size: medium;
+        }
+		#tdataid{
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+		#tstartid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tendid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tdirectionid {
+			padding-top: 3%;			
+            margin-top: 80%;
+            margin-left: 80%;
+            font-size: medium;
+        }
+
+        #tqueueid {
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 60%;
+            font-size: medium;
+        }
+        #tdurationid{
+			padding-top: 3%;
+            margin-top: 80%;
+            margin-left: 60%;
+            font-size: medium;
+        }
+		#recording_info{
+            margin-top: 3%;
+			background-color: #FFFFFF;
+        }
+		.recording_table{
+            margin-top: 1%;
+			font-size: medium;
+        }
+		#edit {
+            padding-left: 150%;
+        }
+		.buttonclass {
+            border: 0ch;
+        }
+		 #recording_type1 {
+            padding-top: 15%;
+        }
+		 .archive_date {
+            padding-top: 8%;
+        }
+		 #archive_date1 {
+            padding-left: 8%;
+        }
+		 #archive_date2 {
+            padding-left: 150%;
+        }
+		.delete_date {
+            padding-top: 8%;
+        }
+		 #delete_date2 {
+            padding-left: 150%;
+        }
+		 #delete_date1 {
+            padding-left: 8%;
+        }
+		#downloadrecording{
+            padding-top: 10%;
+            padding-left: 5%;
+        }
+		.card-group {
+			border-radius: 10%;
+            padding: 3%;
+            width: 900px;
+            height: 320px;
+            margin-left: 3%;
+        }
+	&lt;/style&gt;
+	&lt;div id="cardbox" class="card-group" &gt;
+	&lt;div id="internalparticipant" class="card1"&gt;
+	&lt;div class="card-footer"&gt;
+				&lt;center&gt;
+                &lt;small class="text-muted" id="internal_participant"&gt;Internal participant &lt;/small&gt;
+				&lt;/center&gt;
+            &lt;/div&gt;
+			&lt;div id="internalid"&gt;
+            &lt;center&gt;
+                &lt;img id="image1" src="" class="card-img-top" alt="..."&gt;&lt;/img&gt;
+            &lt;/center&gt;
+            &lt;div class="card-body"&gt;
+                &lt;center&gt;
+					&lt;h4 class="card-title"  id="nameid"&gt; &lt;/h4&gt;
+					&lt;h5 class="card-text" id="sipid"&gt; &lt;/h5&gt;
+                &lt;/center&gt;
+            &lt;/div&gt;
+			&lt;/div&gt;
+        &lt;/div&gt;
+		&lt;div id="imagecard" class="card"&gt;
+			&lt;center&gt;
+            &lt;img id="image3" src="" class="card-img-top" alt="..." &gt;&lt;/img&gt;
+           &lt;audio id="audioid" controls="controls" src=""  type="audio/mpeg"&gt; &lt;/audio&gt;
+			&lt;/center&gt;
+            &lt;div class="card-body"&gt;
+				&lt;center&gt;
+				&lt;input id ="anootation_input" type="text" placeholder="Add Annotation" name="Add Annotation"&gt;&lt;/input&gt;
+                &lt;button id="anootation" type="submit"&gt;Annotate&lt;/button&gt;
+				&lt;/center&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+		 &lt;div id="external_id" class="card3" style="border-radius: 10%;"&gt;
+            &lt;div class="card-footer"&gt;
+				&lt;center&gt;
+                &lt;small class="text-muted"&gt;External participant &lt;/small&gt;
+				&lt;/center&gt;
+            &lt;/div&gt;
+			&lt;div id="externalid"&gt;
+            &lt;center&gt;
+                &lt;img id="image2" src="" class="card-img-top" alt="..."&gt;&lt;/img&gt;
+            &lt;/center&gt;
+            &lt;div class="card-body"&gt;
+                &lt;center&gt;
+					&lt;h4 class="card-title"&gt;MobileNumber, Italy&lt;/h4&gt;
+                   
+					&lt;h5 class="card-text" id="mobileno"&gt; + &lt;/h5&gt;
+                &lt;/center&gt;
+            &lt;/div&gt;
+			&lt;/div&gt;
+        &lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div  class="interactiondiv"&gt;
+        &lt;ul class="nav nav-tabs" id="details"&gt;
+            &lt;li class="nav-item"&gt;
+                &lt;a class="nav-link active" aria-current="page" href="#pills-home"&gt;Details&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li class="nav-item"&gt;
+                &lt;a class="nav-link disabled" href="#pills-profile" tabindex="-1" aria-disabled="true"&gt;Timeline&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li class="nav-item"&gt;
+                &lt;a class="nav-link disabled" href="#pills-contact" tabindex="-1" aria-disabled="true"&gt;Quality
+                    summary&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li class="nav-item"&gt;
+                &lt;a class="nav-link disabled" href="#pills-Audit" tabindex="-1" aria-disabled="true"&gt;Audit Trail&lt;/a&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;
+		&lt;div class="card-footer"  id="leftbox"&gt;
+			&lt;u&gt; &lt;large class="text-muted" id="interactionmatrics"&gt; Interaction Matrics &lt;/large&gt;&lt;/u&gt;
+			&lt;div class="tab-content" id="pills-tabContent"&gt;
+			 &lt;div  id="interaction_id" style="padding-top: 1%;"&gt;
+			&lt;table class="tableclass" id="table"&gt;
+                            &lt;tr&gt;
+                                &lt;th&gt; &lt;/th&gt;
+                                &lt;th&gt; &lt;/th&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td class="tabledata" id="data1"&gt;Interaction Type&lt;/td&gt;
+                                &lt;td class="tdata" id="tdataid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td class="tabledata" id="data1"&gt;Start Time&lt;/td&gt;
+                                &lt;td class="tdata" id="tstartid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td class="tabledata" id="data1"&gt;End Time&lt;/td&gt;
+                                &lt;td class="tdata" id="tendid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td class="tabledata" id="data1"&gt;Direction&lt;/td&gt;
+                                &lt;td class="tdata" id="tdirectionid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td class="tabledata" id="data1"&gt;Queue&lt;/td&gt;
+                                &lt;td class="tdata" id="tqueueid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr class="tablerow" id="tablerowid"&gt;
+                                &lt;td class="tabledata" id="data1"&gt;Duration&lt;/td&gt;
+                                &lt;td class="tdata" id="tdurationid"&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/table&gt;
+			&lt;/div&gt;
+				&lt;/div&gt;
+        &lt;/div&gt;
+		&lt;div class="card-footer" id="recording_info"&gt;
+			&lt;u&gt;&lt;large class="text-muted"&gt; Recording Information                                                &lt;/large&gt;&lt;/u&gt;
+			&lt;table class="recording_table"&gt;
+                &lt;tr class="recordingrow1" id="recordingrow1"&gt;
+                    &lt;td class="recording1" id="recording1"&gt;Recording 1&lt;/td&gt;
+                    &lt;td class="edit" id="edit"&gt;
+                        &lt;a id="buttonid" class="buttonclass" href="" role="button" aria-disabled="true"&gt;Edit&lt;/a&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr class="recordingtdd"&gt;
+                    &lt;td id="recording_type1"&gt;Recording Type&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr class="recordingtdd" id="recording_type"&gt;
+                    &lt;td class="archive_date" id="archive_date1"&gt;Archive Date :&lt;/td&gt;
+                    &lt;td class="archive_date" id="archive_date2"&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr class="recordingtdd" id="recording_type"&gt;
+                    &lt;td class="delete_date" id="delete_date1"&gt;Delete Date :&lt;/td&gt;
+                    &lt;td class="delete_date" id="delete_date2"&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td id="downloadrecording"&gt;
+                        &lt;a download="" href=" "&gt;
+                           Download Recording
+                          &lt;/a&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+	&lt;/div&gt;
+&lt;/j:jelly&gt;]]&gt;&lt;/html&gt;&lt;name&gt;Interaction_details_popup&lt;/name&gt;&lt;processing_script/&gt;&lt;sys_class_name&gt;sys_ui_page&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-03-02 12:53:16&lt;/sys_created_on&gt;&lt;sys_id&gt;4a24b3e01b0a0110f6e242e4cc4bcb34&lt;/sys_id&gt;&lt;sys_mod_count&gt;2&lt;/sys_mod_count&gt;&lt;sys_name&gt;Interaction_details_popup&lt;/sys_name&gt;&lt;sys_package display_value="NovelVox" source="x_769265_novelvox"&gt;ead6aae41bc20110f6e242e4cc4bcb03&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="NovelVox"&gt;ead6aae41bc20110f6e242e4cc4bcb03&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_page_4a24b3e01b0a0110f6e242e4cc4bcb34&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-03-02 12:57:12&lt;/sys_updated_on&gt;&lt;/sys_ui_page&gt;&lt;/record_update&gt;</payload>
+        <payload_hash>-2091780232</payload_hash>
+        <record_name>Interaction_details_popup</record_name>
+        <reverted_from/>
+        <source>aed6aae41bc20110f6e242e4cc4bcb05</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-03-02 12:57:13</sys_created_on>
+        <sys_id>5145b7241b0a0110f6e242e4cc4bcbd1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>17f4ab4bc270000001</sys_recorded_at>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-03-02 12:57:13</sys_updated_on>
+        <type>UI Page</type>
+        <update_guid>9945b724cc0a0110503d6b164386d8d0</update_guid>
+        <update_guid_history>9945b724cc0a0110503d6b164386d8d0:-2091780232,1884bfe07f0a0110cb2c8a9da5338240:-654719955,ef54f3e0f50a011057c7166c8b322934:-559290903</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-03-02 13:32:31</sys_created_on>
+        <sys_db_object display_value="" name="sys_ui_page">sys_ui_page</sys_db_object>
+        <sys_id>8249c6ff7bf646ae9050c52bce46a889</sys_id>
+        <sys_metadata>4a24b3e01b0a0110f6e242e4cc4bcb34</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Interaction_details_popup</sys_name>
+        <sys_package display_value="NovelVox" source="x_769265_novelvox">ead6aae41bc20110f6e242e4cc4bcb03</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="NovelVox">ead6aae41bc20110f6e242e4cc4bcb03</sys_scope>
+        <sys_scope_delete display_value="">60d893a1438349c0afbfb97d6e183900</sys_scope_delete>
+        <sys_update_name>sys_ui_page_4a24b3e01b0a0110f6e242e4cc4bcb34</sys_update_name>
+        <sys_update_version display_value="sys_ui_page_4a24b3e01b0a0110f6e242e4cc4bcb34">5145b7241b0a0110f6e242e4cc4bcbd1</sys_update_version>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-03-02 13:32:31</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

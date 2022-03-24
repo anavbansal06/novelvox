@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>true</client>
+        <client_script_v2><![CDATA[function onClick(g_form) {
+
+}]]></client_script_v2>
+        <comments/>
+        <condition/>
+        <form_action>true</form_action>
+        <form_button>true</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>false</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <messages/>
+        <name>open Interaction</name>
+        <onclick>interactionrecord()</onclick>
+        <order>100</order>
+        <script><![CDATA[function interactionrecord() {
+
+    var Interaction_id_detail = g_form.getValue("x_769265_novelvox_interaction_id");
+    console.log("Interaction_id_detail", Interaction_id_detail);
+    //conversationid();
+
+    /* var receiveCTIMessage = function(event) {
+         try {
+             //mynew
+             console.log("enter interaction details", event);
+             handleCTIMessages(event);
+         } catch (err) {
+             if (err) {
+                 console.log('error occured');
+                 console.error('receiveMessage', err.message);
+             }
+
+         }
+     }
+
+     var addCTIEvent = parent.attachEvent || parent.addEventListener;
+     console.log("addCTIEvent", addCTIEvent);
+     var event = parent.attachEvent ? 'onmessage' : 'message';
+     console.log("event", event);
+
+     addCTIEvent(event, receiveCTIMessage);*/
+
+    /* function handleCTIMessages(event) {
+         if (event.data.eventName == "Interaction_id_detail") {
+
+             var Interaction_id_detail = event.data.value.Interaction_id_detail;
+             // var Interaction_id_detail = event.data.value.Interaction_id_detail;
+             console.log("Interaction_id_detail", Interaction_id_detail);
+             // if (Interaction_id_detail == "d631f576-9197-46b6-afd9-986cd23fd500") {
+         }*/
+
+
+    //var dialog = new g_navigation.openPopup("x_769265_novelvox_Interacation_detail");
+    var dialog = new GlideDialogWindow("x_769265_novelvox_Interacation_detail");
+    dialog.setTitle("Interaction Details");
+    dialog.setSize(1000, 2150);
+    dialog.setPreference("Interaction_id_detail", Interaction_id_detail);
+    //dialog.setPreference("sys_id",g_form.getUniqueValue());
+    //dialog.setPreference("receiveCTIMessage", receiveCTIMessage);
+    // dialog.setPreference("comments_text", comments_text); //Pass in comments for use in the dialog
+    // dialog.setPreference("short_text", short_text);
+    dialog.render();
+    // } else {
+    //   console.log("error message");
+    //}
+    //  }
+
+    /* function conversationid() {
+         var Interaction_id_detail = "d631f576-9197-46b6-afd9-986cd23fd500";
+         var jsondata = {
+             "eventName": "Interaction_id_detail",
+             "value": {
+                 "Interaction_id_detail": Interaction_id_detail
+             }
+         };
+
+         parent.postMessage(jsondata, "*");
+     }*/
+    /*var requestBody = "{\"x_284677_nv_softph_end_time\":\"1234\",\"x_284677_nv_softph_duration\":\"2345\"}";
+
+    var username = 'admin';
+    var password = 'A0sOTCyjsFy5';
+
+    // Instantiate request with ServiceNow API incidents table endpoint
+    var request = new GlideHTTPRequest('https://dev83436.service-now.com/api/now/table/incident/46e2fee9a9fe19810049b49dee0daf58');
+
+    // Add authentication data
+    request.setBasicAuth(username, password);
+
+    // Add the Accept header to get JSON response
+    request.addHeader('Accept', 'application/json');
+    request.addHeader('Content-Type', 'application/json');
+
+    // Execute the GET request
+    var response = request.put();
+
+    // Print the results: status code and number of records returned
+    //gs.print(response.getStatusCode());
+    //gs.print('(JSON) Incidents returned: ' + JSON.parse(response.getBody()).result.length);
+
+    // Replace the Accept header to get XML response
+    request.addHeader('Accept', 'application/xml');
+
+    // Execute the GET request
+    var response = request.put();
+    request.send(requestBody);*/
+}]]></script>
+        <show_insert>true</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-03-02 12:56:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>29b4b7241b0a0110f6e242e4cc4bcb0b</sys_id>
+        <sys_mod_count>89</sys_mod_count>
+        <sys_name>open Interaction</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="NovelVox" source="x_769265_novelvox">ead6aae41bc20110f6e242e4cc4bcb03</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="NovelVox">ead6aae41bc20110f6e242e4cc4bcb03</sys_scope>
+        <sys_update_name>sys_ui_action_29b4b7241b0a0110f6e242e4cc4bcb0b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-03-22 05:12:39</sys_updated_on>
+        <table>incident</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>false</ui16_compatible>
+    </sys_ui_action>
+</record_update>
